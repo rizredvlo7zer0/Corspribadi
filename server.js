@@ -3,26 +3,28 @@ const cors_proxy = require('cors-anywhere');
 const host = '0.0.0.0';
 const port = process.env.PORT || 8080;
 
+// Konfigurasi khusus untuk Blogger/Feed
 const server = cors_proxy.createServer({
   originWhitelist: [], // Izinkan semua origin
-  requireHeader: ['origin', 'x-requested-with'],
-  removeHeaders: ['cookie', 'cookie2'],
-  
-  // Tambahkan handler untuk modifikasi request
-  modifyRequest: (req) => {
-    // Force Accept header untuk meminta JSON
-    req.headers['accept'] = 'application/json';
-    return req;
+  requireHeader: [], // Tidak membutuhkan header khusus
+  removeHeaders: [
+    'cookie',
+    'cookie2',
+    'x-heroku-queue-wait-time',
+    'x-heroku-queue-depth',
+    'x-request-start'
+  ],
+  setHeaders: {
+    'Referer': 'https://www.blogger.com/',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
   },
-  
-  // Tambahkan handler untuk modifikasi response
-  modifyResponse: (res) => {
-    // Pastikan Content-Type adalah JSON
-    res.headers['content-type'] = 'application/json';
-    return res;
+  redirectSameOrigin: true,
+  httpProxyOptions: {
+    xfwd: false,
+    secure: false
   }
 });
 
 server.listen(port, host, () => {
-  console.log(`Server CORS proxy berjalan di http://${host}:${port}`);
+  console.log(`Server proxy aktif di http://${host}:${port}`);
 });
